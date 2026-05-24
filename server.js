@@ -1,4 +1,16 @@
 require('dotenv').config();
+
+// Verificação de variáveis obrigatórias
+console.log('🔍 Verificando variáveis de ambiente...');
+console.log('SUPABASE_URL:', process.env.SUPABASE_URL ? '✅ OK' : '❌ NÃO DEFINIDA');
+console.log('SUPABASE_KEY:', process.env.SUPABASE_KEY ? '✅ OK' : '❌ NÃO DEFINIDA');
+console.log('JWT_SECRET:', process.env.JWT_SECRET ? '✅ OK' : '❌ NÃO DEFINIDA');
+
+if (!process.env.SUPABASE_URL || !process.env.SUPABASE_KEY || !process.env.JWT_SECRET) {
+  console.error('❌ ERRO FATAL: Variáveis de ambiente obrigatórias não configuradas!');
+  process.exit(1);
+}
+
 const express = require('express');
 const cors = require('cors');
 
