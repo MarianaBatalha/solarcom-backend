@@ -45,6 +45,20 @@ app.get('/', (req, res) => {
   res.json({ mensagem: '☀ SolarCom API funcionando!', status: 'online' });
 });
 
+app.get('/debug/supabase', async (req, res) => {
+  try {
+    const supabase = require('./config/supabase');
+    const { data, error } = await supabase.from('fazendas').select('id').limit(1);
+    res.json({
+      supabase_url: process.env.SUPABASE_URL,
+      erro: error ? error.message : null,
+      data: data,
+    });
+  } catch (e) {
+    res.json({ supabase_url: process.env.SUPABASE_URL, excecao: e.message });
+  }
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`☀ SolarCom API rodando na porta ${PORT}`);
