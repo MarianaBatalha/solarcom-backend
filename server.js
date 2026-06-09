@@ -34,12 +34,15 @@ const fazendaRoutes = require('./routes/fazenda');
 console.log('fazenda OK');
 const comunidadeRoutes = require('./routes/comunidade');
 console.log('comunidade OK');
+const adminRoutes = require('./routes/admin');
+console.log('admin OK');
 
 app.use('/auth', authRoutes);
 app.use('/usuario', usuarioRoutes);
 app.use('/creditos', creditosRoutes);
 app.use('/fazenda', fazendaRoutes);
 app.use('/comunidade', comunidadeRoutes);
+app.use('/admin', adminRoutes);
 
 app.get('/', (req, res) => {
   res.json({ mensagem: '☀ SolarCom API funcionando!', status: 'online' });

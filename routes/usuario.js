@@ -8,7 +8,7 @@ router.get('/perfil', autenticar, async (req, res) => {
   try {
     const { data, error } = await supabase
       .from('usuarios')
-      .select('id, nome, cpf, email, telefone, endereco, distribuidora, codigo_cliente, conta_antes, modelo, assinatura, ativo, created_at')
+      .select('id, nome, cpf, email, telefone, endereco, distribuidora, codigo_cliente, conta_antes, modelo, assinatura, ativo, role, status, created_at')
       .eq('id', req.usuarioId)
       .single();
     if (error) throw error;
@@ -25,7 +25,7 @@ router.put('/perfil', autenticar, async (req, res) => {
       .from('usuarios')
       .update({ nome, telefone, endereco, distribuidora, codigo_cliente })
       .eq('id', req.usuarioId)
-      .select('id, nome, cpf, email, telefone, endereco, distribuidora, codigo_cliente, conta_antes, modelo, assinatura, ativo, created_at')
+      .select('id, nome, cpf, email, telefone, endereco, distribuidora, codigo_cliente, conta_antes, modelo, assinatura, ativo, role, status, created_at')
       .single();
     if (error) throw error;
     res.json({ mensagem: 'Perfil atualizado!', usuario: data });

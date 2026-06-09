@@ -44,11 +44,10 @@ router.post('/cadastro', async (req, res) => {
     const senhaHash = await bcrypt.hash(senha, 10);
     const { data, error } = await supabase
       .from('usuarios')
-      .insert([{ nome, cpf: cpfLimpo, email, senha: senhaHash, telefone, endereco, distribuidora, codigo_cliente, conta_antes: conta_antes || 200, modelo: 'fixo', assinatura: 79, ativo: true }])
+      .insert([{ nome, cpf: cpfLimpo, email, senha: senhaHash, telefone, endereco, distribuidora, codigo_cliente, conta_antes: conta_antes || 200, modelo: 'fixo', assinatura: 79, ativo: false, status: 'pendente', role: 'cliente' }])
       .select().single();
     if (error) throw error;
-    const token = jwt.sign({ id: data.id, cpf: data.cpf }, process.env.JWT_SECRET, { expiresIn: '24h' });
-    res.status(201).json({ mensagem: 'Cadastro realizado!', token, usuario: { id: data.id, nome: data.nome, email: data.email } });
+    res.status(201).json({ mensagem: 'Cadastro realizado! Aguarde a aprovação do administrador.' });
   } catch (error) {
     if (error.code === '23505') {
       return res.status(400).json({ erro: 'CPF ou e-mail já cadastrado' });
@@ -66,8 +65,11 @@ router.post('/login', loginLimiter, async (req, res) => {
     if (error || !usuario) return res.status(401).json({ erro: 'CPF ou senha incorretos' });
     const senhaCorreta = await bcrypt.compare(senha, usuario.senha);
     if (!senhaCorreta) return res.status(401).json({ erro: 'CPF ou senha incorretos' });
+    if (usuario.role !== 'admin' && usuario.status !== 'ativo') {
+      return res.status(403).json({ erro: 'Cadastro pendente. Aguarde a aprovação do administrador.' });
+    }
     const token = jwt.sign({ id: usuario.id, cpf: usuario.cpf }, process.env.JWT_SECRET, { expiresIn: '24h' });
-    res.json({ mensagem: 'Login realizado!', token, usuario: { id: usuario.id, nome: usuario.nome, email: usuario.email, modelo: usuario.modelo } });
+    res.json({ mensagem: 'Login realizado!', token, usuario: { id: usuario.id, nome: usuario.nome, email: usuario.email, modelo: usuario.modelo, role: usuario.role } });
   } catch (error) {
     res.status(500).json({ erro: error.message });
   }
