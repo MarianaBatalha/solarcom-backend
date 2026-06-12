@@ -117,7 +117,7 @@ router.get('/creditos/usuarios-ativos', adminAuth, async (req, res) => {
 // Distribuir créditos para usuários selecionados
 router.post('/creditos/distribuir', adminAuth, async (req, res) => {
   try {
-    const { creditoValor, usuarioIds } = req.body;
+    const { creditoValor, usuarioIds, mes } = req.body;
 
     if (!creditoValor || isNaN(creditoValor) || Number(creditoValor) <= 0) {
       return res.status(400).json({ erro: 'Valor de crédito inválido' });
@@ -127,9 +127,14 @@ router.post('/creditos/distribuir', adminAuth, async (req, res) => {
     }
 
     const valor = Number(creditoValor);
+    // mes é DATE no banco (YYYY-MM-DD). Usa o recebido ou o 1º dia do mês atual
+    const agora = new Date();
+    const mesData = mes || `${agora.getFullYear()}-${String(agora.getMonth() + 1).padStart(2, '0')}-01`;
+
     const registros = usuarioIds.map(id => ({
       usuario_id: id,
       credito_valor: valor,
+      mes: mesData,
     }));
 
     const { data, error } = await supabase
