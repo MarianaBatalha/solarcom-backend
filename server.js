@@ -62,6 +62,37 @@ app.get('/debug/supabase', async (req, res) => {
   }
 });
 
+app.get('/debug/creditos-schema', async (req, res) => {
+  try {
+    const supabase = require('./config/supabase');
+    const adminId = 'd2755055-ac40-414b-8dd1-e9bbd8c483b6';
+    // Tenta formato DATE
+    const { data: d1, error: e1 } = await supabase
+      .from('creditos').insert([{ usuario_id: adminId, credito_valor: 1, mes: '2026-06-01' }]).select();
+    if (!e1) {
+      await supabase.from('creditos').delete().eq('id', d1[0].id);
+      return res.json({ formato_funcionou: 'DATE: 2026-06-01' });
+    }
+    // Tenta formato texto
+    const { data: d2, error: e2 } = await supabase
+      .from('creditos').insert([{ usuario_id: adminId, credito_valor: 1, mes: 'Junho/2026' }]).select();
+    if (!e2) {
+      await supabase.from('creditos').delete().eq('id', d2[0].id);
+      return res.json({ formato_funcionou: 'TEXT: Junho/2026' });
+    }
+    // Tenta formato numérico (mês como número)
+    const { data: d3, error: e3 } = await supabase
+      .from('creditos').insert([{ usuario_id: adminId, credito_valor: 1, mes: 6 }]).select();
+    if (!e3) {
+      await supabase.from('creditos').delete().eq('id', d3[0].id);
+      return res.json({ formato_funcionou: 'INTEGER: 6' });
+    }
+    res.json({ erro_date: e1.message, erro_text: e2.message, erro_int: e3.message });
+  } catch (e) {
+    res.json({ excecao: e.message });
+  }
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`☀ SolarCom API rodando na porta ${PORT}`);
