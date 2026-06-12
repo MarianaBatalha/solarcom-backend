@@ -47,14 +47,23 @@ router.put('/usuarios/:id/bloquear', adminAuth, async (req, res) => {
   }
 });
 
-// Excluir usuário
+// Excluir usuário (apaga créditos primeiro para não violar foreign key)
 router.delete('/usuarios/:id', adminAuth, async (req, res) => {
   try {
+    // 1. Remove créditos do usuário
+    const { error: erroCred } = await supabase
+      .from('creditos')
+      .delete()
+      .eq('usuario_id', req.params.id);
+    if (erroCred) throw erroCred;
+
+    // 2. Remove o usuário
     const { error } = await supabase
       .from('usuarios')
       .delete()
       .eq('id', req.params.id);
     if (error) throw error;
+
     res.json({ mensagem: 'Usuário excluído com sucesso!' });
   } catch (error) {
     res.status(500).json({ erro: error.message });
