@@ -154,4 +154,33 @@ router.post('/creditos/distribuir', adminAuth, async (req, res) => {
   }
 });
 
+// Listar todos os créditos distribuídos (com nome do usuário)
+router.get('/creditos', adminAuth, async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('creditos')
+      .select('id, credito_valor, mes, created_at, usuario_id, usuarios(nome, cpf, modelo, assinatura)')
+      .order('created_at', { ascending: false })
+      .limit(100);
+    if (error) throw error;
+    res.json({ creditos: data });
+  } catch (error) {
+    res.status(500).json({ erro: error.message });
+  }
+});
+
+// Remover um crédito específico
+router.delete('/creditos/:id', adminAuth, async (req, res) => {
+  try {
+    const { error } = await supabase
+      .from('creditos')
+      .delete()
+      .eq('id', req.params.id);
+    if (error) throw error;
+    res.json({ mensagem: 'Crédito removido com sucesso!' });
+  } catch (error) {
+    res.status(500).json({ erro: error.message });
+  }
+});
+
 module.exports = router;
