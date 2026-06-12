@@ -98,4 +98,55 @@ router.put('/usuarios/:id/role', adminAuth, async (req, res) => {
   }
 });
 
+// Listar usuários ativos para distribuição de créditos
+router.get('/creditos/usuarios-ativos', adminAuth, async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('usuarios')
+      .select('id, nome, cpf, modelo, assinatura, conta_antes')
+      .eq('status', 'ativo')
+      .neq('role', 'admin')
+      .order('nome');
+    if (error) throw error;
+    res.json({ usuarios: data });
+  } catch (error) {
+    res.status(500).json({ erro: error.message });
+  }
+});
+
+// Distribuir créditos para usuários selecionados
+router.post('/creditos/distribuir', adminAuth, async (req, res) => {
+  try {
+    const { creditoValor, usuarioIds } = req.body;
+
+    if (!creditoValor || isNaN(creditoValor) || Number(creditoValor) <= 0) {
+      return res.status(400).json({ erro: 'Valor de crédito inválido' });
+    }
+    if (!usuarioIds || !Array.isArray(usuarioIds) || usuarioIds.length === 0) {
+      return res.status(400).json({ erro: 'Selecione ao menos um usuário' });
+    }
+
+    const valor = Number(creditoValor);
+    const registros = usuarioIds.map(id => ({
+      usuario_id: id,
+      credito_valor: valor,
+    }));
+
+    const { data, error } = await supabase
+      .from('creditos')
+      .insert(registros)
+      .select();
+
+    if (error) throw error;
+
+    res.json({
+      mensagem: `Crédito de R$ ${valor} distribuído para ${usuarioIds.length} usuário(s)!`,
+      total: usuarioIds.length,
+      registros: data,
+    });
+  } catch (error) {
+    res.status(500).json({ erro: error.message });
+  }
+});
+
 module.exports = router;
