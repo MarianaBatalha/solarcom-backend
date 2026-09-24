@@ -18,7 +18,12 @@ router.get('/perfil', autenticar, async (req, res) => {
   }
 });
 
-router.put('/perfil', autenticar, async (req, res) => {
+const bloqueioDemo = (req, res, next) => {
+  if (req.isDemo) return res.status(403).json({ erro: 'Conta demo — ação não permitida.' });
+  next();
+};
+
+router.put('/perfil', autenticar, bloqueioDemo, async (req, res) => {
   try {
     const { nome, telefone, endereco, distribuidora, codigo_cliente } = req.body;
     const { data, error } = await supabase
@@ -34,7 +39,7 @@ router.put('/perfil', autenticar, async (req, res) => {
   }
 });
 
-router.put('/senha', autenticar, async (req, res) => {
+router.put('/senha', autenticar, bloqueioDemo, async (req, res) => {
   try {
     const { senhaAtual, novaSenha } = req.body;
     if (!senhaAtual || !novaSenha) {

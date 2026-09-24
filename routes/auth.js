@@ -68,8 +68,10 @@ router.post('/login', loginLimiter, async (req, res) => {
     if (usuario.role !== 'admin' && usuario.status !== 'ativo') {
       return res.status(403).json({ erro: 'Cadastro pendente. Aguarde a aprovação do administrador.' });
     }
-    const token = jwt.sign({ id: usuario.id, cpf: usuario.cpf }, process.env.JWT_SECRET, { expiresIn: '24h' });
-    res.json({ mensagem: 'Login realizado!', token, usuario: { id: usuario.id, nome: usuario.nome, email: usuario.email, modelo: usuario.modelo, role: usuario.role } });
+    const isDemo = cpfLimpo === '52998224725';
+    const payload = { id: usuario.id, cpf: usuario.cpf, ...(isDemo && { demo: true }) };
+    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: isDemo ? '1h' : '24h' });
+    res.json({ mensagem: 'Login realizado!', token, usuario: { id: usuario.id, nome: usuario.nome, email: usuario.email, modelo: usuario.modelo, role: usuario.role, demo: isDemo } });
   } catch (error) {
     res.status(500).json({ erro: error.message });
   }
