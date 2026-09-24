@@ -1,0 +1,24 @@
+name: Ping Supabase (keep alive)
+
+on:
+  schedule:
+    # Roda todo dia às 10h (horário de Brasília = 13h UTC)
+    - cron: '0 13 * * *'
+  workflow_dispatch: # permite rodar manualmente pelo GitHub
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping API e Supabase
+        run: |
+          echo "🔔 Pingando SolarCom API..."
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://solarcom-api.vercel.app/health)
+          BODY=$(curl -s https://solarcom-api.vercel.app/health)
+          echo "HTTP Status: $STATUS"
+          echo "Resposta: $BODY"
+          if [ "$STATUS" != "200" ]; then
+            echo "❌ API retornou $STATUS"
+            exit 1
+          fi
+          echo "✅ Supabase ativo!"

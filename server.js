@@ -71,6 +71,20 @@ app.get('/', (req, res) => {
   res.json({ mensagem: '☀ SolarCom API funcionando!', status: 'online' });
 });
 
+// Health check — faz uma query real no Supabase para evitar pausa por inatividade
+app.get('/health', async (req, res) => {
+  try {
+    const supabase = require('./config/supabase');
+    const { count, error } = await supabase
+      .from('usuarios')
+      .select('*', { count: 'exact', head: true });
+    if (error) throw error;
+    res.json({ status: 'ok', db: 'online', usuarios: count, ts: new Date().toISOString() });
+  } catch (e) {
+    res.status(503).json({ status: 'erro', detalhe: e.message });
+  }
+});
+
 // 404 handler
 app.use((req, res) => {
   res.status(404).json({ erro: 'Rota não encontrada' });
